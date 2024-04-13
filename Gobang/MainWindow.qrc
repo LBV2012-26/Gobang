@@ -1,0 +1,7 @@
+<RCC>
+    <qresource prefix="/Gobang">
+        <file>Resources/Textures/BlackPawn.png</file>
+        <file>Resources/Textures/Board.jpg</file>
+        <file>Resources/Textures/WhitePawn.png</file>
+    </qresource>
+</RCC>
