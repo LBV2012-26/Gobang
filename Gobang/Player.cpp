@@ -29,8 +29,8 @@ void Player::PutPawn(bool bHumanFlag) {
 }
 
 void Player::InitPlayer() {
-    _HumanPawn   = Board::_kBlack;
-    _MachinePawn = Board::_kWhite;
+    _HumanPawn   = Board::_kWhite;
+    _MachinePawn = Board::_kBlack;
     _Evaluator   = std::make_shared<Evaluator>(Evaluator(_Board, _MachinePawn));
 }
 
@@ -52,7 +52,7 @@ void Player::MachinePutPawn(const Board::PawnInfo& LastHumanPawn) {
     if (_Board->GetPawnCount() >= 2) {
         if (_Board->GetPawnCount() <= 6) {
             _Evaluator->Minimax(0, 4, std::numeric_limits<int>::min(), std::numeric_limits<int>::max(), true, _MachinePawn);
-        } else if (_Board->GetPawnCount() <= 120) {
+        } else if (_Board->GetPawnCount() <= 60) {
             _Evaluator->Minimax(0, 6, std::numeric_limits<int>::min(), std::numeric_limits<int>::max(), true, _MachinePawn);
         } else {
             _Evaluator->Minimax(0, 8, std::numeric_limits<int>::min(), std::numeric_limits<int>::max(), true, _MachinePawn);
