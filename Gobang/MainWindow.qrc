@@ -3,5 +3,7 @@
         <file>Resources/Textures/BlackPawn.png</file>
         <file>Resources/Textures/Board.jpg</file>
         <file>Resources/Textures/WhitePawn.png</file>
+        <file>Resources/Textures/BlackPawnGlass.png</file>
+        <file>Resources/Textures/WhitePawnGlass.png</file>
     </qresource>
 </RCC>

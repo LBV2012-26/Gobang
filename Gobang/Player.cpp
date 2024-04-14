@@ -1,24 +1,17 @@
 #include "Player.h"
 #include "MainWindow.h"
 
+#include <chrono>
 #include <cstdlib>
 #include <limits>
 #include <random>
-#include <Windows.h>
 
 #ifdef _DEBUG
 #include <QDebug>
 #endif // _DEBUG
 
-#ifdef min
-#undef min
-#endif // min
-#ifdef max
-#undef max
-#endif // max
-
 Player::Player(std::shared_ptr<Board> Board, std::shared_ptr<MainWindow> MainWindow) :
-    _Board(Board), _Evaluator(nullptr), _MainWindow(MainWindow), _bHumanFlag(true)
+    _Board(Board), _Evaluator(nullptr), _MainWindow(MainWindow), _bHumanFlag(true), _DebugMode(false)
 {
     connect(_MainWindow.get(), &MainWindow::Signal_MouseEvent, this, &Player::Slot_MouseEvent);
     InitPlayer();
@@ -31,7 +24,10 @@ void Player::PutPawn(bool bHumanFlag) {
 void Player::InitPlayer() {
     _HumanPawn   = Board::_kBlack;
     _MachinePawn = Board::_kWhite;
-    _Evaluator   = std::make_shared<Evaluator>(Evaluator(_Board, _MachinePawn));
+
+    double Aggressiveness = _MachinePawn == Board::_kBlack ? 1.8 : 0.5;
+
+    _Evaluator   = std::make_shared<Evaluator>(Evaluator(_Board, _MachinePawn, Aggressiveness));
 }
 
 void Player::HumanPutPawn(const Board::PawnInfo& Pawn) {
@@ -39,52 +35,71 @@ void Player::HumanPutPawn(const Board::PawnInfo& Pawn) {
     if (Result.second == false) {
         return;
     }
-    _bHumanFlag = !_bHumanFlag;
-    MachinePutPawn(Result.first);
+
+    if (_Evaluator->IsGameOver(Pawn)) {
+        std::cout << "Game over" << std::endl;
+    }
+
+    if (!_DebugMode) {
+        _bHumanFlag = !_bHumanFlag;
+        MachinePutPawn(Result.first);
+    }
 }
 
 void Player::MachinePutPawn(const Board::PawnInfo& LastHumanPawn) {
+    auto BeginTime = std::chrono::steady_clock::now();
     if (_Board->GetPawnCount() == 0 && _MachinePawn == Board::_kBlack) {
         _Board->PutPawn({ 7, 7, _MachinePawn }, true);
         return;
     }
 
-    if (_Board->GetPawnCount() >= 2) {
-        if (_Board->GetPawnCount() <= 6) {
-            _Evaluator->Minimax(0, 4, std::numeric_limits<int>::min(), std::numeric_limits<int>::max(), true, _MachinePawn);
-        } else if (_Board->GetPawnCount() <= 120) {
-            _Evaluator->Minimax(0, 6, std::numeric_limits<int>::min(), std::numeric_limits<int>::max(), true, _MachinePawn);
-        } else {
-            _Evaluator->Minimax(0, 8, std::numeric_limits<int>::min(), std::numeric_limits<int>::max(), true, _MachinePawn);
-        }
-        _Board->PutPawn(_Evaluator->GetBestMove(), true);
+    int Score = 0;
+    if (_Board->GetPawnCount() <= 6) {
+        _Evaluator->Minimax(0, 6, std::numeric_limits<int>::min(), std::numeric_limits<int>::max(), _MachinePawn);
+    } else if (_Board->GetPawnCount() <= 20) {
+        Score = _Evaluator->Minimax(0, 8, std::numeric_limits<int>::min(), std::numeric_limits<int>::max(), _MachinePawn);
+    } else if (_Board->GetPawnCount() <= 60) {
+        Score = _Evaluator->Minimax(0, 10, std::numeric_limits<int>::min(), std::numeric_limits<int>::max(), _MachinePawn);
     } else {
-        Sleep(500);
-        int RandomNumber = 0;
-        int NextPos[2]{};
-        do {
-            for (int i = 0; i != 2; ++i) {
-                std::mt19937 Engine(std::random_device{}());
-                std::uniform_int_distribution<int> Distribution(-100, 100);
-                RandomNumber = Distribution(Engine);
-                if (RandomNumber < 0) {
-                    NextPos[i] = -1;
-                } else {
-                    NextPos[i] = 1;
-                }
-            }
-        } while (_Board->PutPawn({ LastHumanPawn.Row + NextPos[0], LastHumanPawn.Column + NextPos[1], _MachinePawn }, true).second == false);
+        Score = _Evaluator->Minimax(0, 12, std::numeric_limits<int>::min(), std::numeric_limits<int>::max(), _MachinePawn);
+    }
+
+    if (_Board->GetPawnCount() >= 10) {
+        _Board->PutPawn(_Evaluator->GetBestMove(true, true, 8), true);
+    } else if (_Board->GetPawnCount() >= 30) {
+        _Board->PutPawn(_Evaluator->GetBestMove(true, true, 12), true);
+    } else {
+        _Board->PutPawn(_Evaluator->GetBestMove(false), true);
     }
     _bHumanFlag = !_bHumanFlag;
+    auto EndTime = std::chrono::steady_clock::now();
+    double Duration = std::chrono::duration<double>(EndTime - BeginTime).count();
+    std::cout << "Duration time: " << Duration << "s" << std::endl;
+    std::cout << "Score: " << Score << std::endl;
 }
 
 void Player::Slot_MouseEvent(QMouseEvent* Event) {
-    if (_bHumanFlag == true && Event->button() == Qt::LeftButton) {
-        HumanPutPawn({ Event->pos().y(), Event->pos().x(), _HumanPawn });
-        _bHumanFlag = true;
+    if (!_DebugMode) {
+        if (_bHumanFlag == true && Event->button() == Qt::LeftButton) {
+            HumanPutPawn({ Event->pos().y(), Event->pos().x(), _HumanPawn });
+            _bHumanFlag = true;
+        }
+
+        if (Event->button() == Qt::RightButton) {
+            MachinePutPawn({});
+        }
+    } else {
+        if (Event->button() == Qt::LeftButton) {
+            HumanPutPawn({ Event->pos().y(), Event->pos().x(), Board::_kBlack });
+        } else if (Event->button() == Qt::RightButton) {
+            HumanPutPawn({ Event->pos().y(), Event->pos().x(), Board::_kWhite });
+        }
     }
 
-    if (Event->button() == Qt::RightButton) {
-        MachinePutPawn({});
+    if (Event->button() == Qt::MiddleButton) {
+        if (_DebugMode) {
+            _bHumanFlag = false;
+        }
+        _DebugMode = !_DebugMode;
     }
 }

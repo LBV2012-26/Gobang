@@ -31,6 +31,7 @@ private:
     Board::PawnType             _MachinePawn;
     Board::PawnInfo             _LastMachineCache;
     bool                        _bHumanFlag;
+    bool                        _DebugMode;
 
 #ifdef _DEBUG
     bool                        _bSimulateMachine = false;

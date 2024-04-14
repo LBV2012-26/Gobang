@@ -27,7 +27,7 @@ void MainWindow::SetupAssets() {
     _BlackPawnImage.load(":/Gobang/Resources/Textures/BlackPawn.png");
     _WhitePawnImage.load(":/Gobang/Resources/Textures/WhitePawn.png");
 
-    _BoardImage = _BoardImage.scaled(_MainUi.Label_Board->size(), Qt::KeepAspectRatio);
+    _BoardImage = _BoardImage.scaled(_MainUi.Label_Board->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation);
     _MainUi.Label_Board->setPixmap(QPixmap::fromImage(_BoardImage));
 }
 
@@ -55,7 +55,8 @@ QImage MainWindow::OverlayImage(const QImage& SrcImage, const QImage& FullImage)
     QPoint Coord     = QPoint(_Pawn.Column * kGridSize + kMargin - kPawnSize / 2,
                               _Pawn.Row    * kGridSize + kMargin - kPawnSize / 2);
     QPainter Painter(&Image);
-    Painter.setRenderHint(QPainter::Antialiasing, true);
+    Painter.setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform);
+    Painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
     Painter.drawImage(Coord, TempImage);
     Painter.end();
 

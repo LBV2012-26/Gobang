@@ -7,7 +7,7 @@
 
 const int kMargin    = 30;
 const int kGridSize  = 46;
-const int kPawnSize  = 50;
+const int kPawnSize  = 46;
 const int kBoardSize = 15;
 const int kTexSize   = 700;
 
