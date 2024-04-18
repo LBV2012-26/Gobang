@@ -46,8 +46,8 @@ public:
     Evaluator(std::shared_ptr<Board> Board, Board::PawnType PawnType, double Aggressiveness);
 
     bool IsGameOver(const Board::PawnInfo& LatestPawn);
-    int Minimax(int CurrentNode, int Depth, int Alpha, int Beta, Board::PawnType PawnType);
-    Board::PawnInfo GetBestMove(bool bProcessCalcKill, bool bIsVct = false, int NextDepth = 0);
+    int Minimax(int CurrentDepth, int NextDepth, int Alpha, int Beta, Board::PawnType PawnType);
+    Board::PawnInfo GetBestMove(int MaxDepth, bool bProcessCalcKill = false, int MaxVcxDepth = 0, bool bIsVct = false, int NextDepth = 0);
 
 private:
     int Evaluate(Board::PawnInfo& Pawn);
@@ -56,14 +56,14 @@ private:
     QString GetSituation(const Board::PawnInfo& Pawn, int Direction);
     QChar GetPawn(const Board::PawnInfo& Pawn, int Direction, int Offset);
     PawnLayout GetPawnLayout(const QString& Str);
-    int EvalBoard();
     bool HasLayout(const QString& Str, const std::vector<QString>& Layout);
     bool HasLayoutNearPawn(const Board::PawnInfo& Pawn, const std::vector<QString>& Layout);
+    int EvalBoard();
     Board::PawnInfo CalcVcxKill(int NextDepth, bool bIsVct, Board::PawnType PawnType);
     Board::PawnInfo GetBestPoint(std::vector<Board::PawnInfo>& Points);
     std::vector<Board::PawnInfo> GenRandomPoints(std::size_t Amount);
     Board::PawnInfo DeepingCalcKill(int NextDepth, int MaxDepth, bool bIsVct);
-    Board::PawnInfo DeepingMinimax(int NextDepth, int MaxDepth);
+    void DeepingMinimax(int NextDepth, int MaxDepth);
 
 private:
     void PutPawn(const Board::PawnInfo& Point) {

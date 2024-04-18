@@ -18,7 +18,7 @@ Evaluator::Evaluator(std::shared_ptr<Board> Board, Board::PawnType PawnType, dou
     _kThree({ "_XXX__", "_XX_X_", "_X_XX_", "__XXX_" }), // 活三
     _kBlockFour({ "_XXXX", "X_XXX", "XX_XX", "XXX_X", "XXXX_" }), // 冲四
     _kTwo({ "__XX__", "_XX___", "___XX_", "_X_X__", "__X_X_" }), // 活二
-    _kOne({ "_X_#__", "__#_X_", "_#_X__", "__X_#_", "#_X___", "___X_#", "___#_X", "X_#___"}), // 活一
+    _kOne({ "_X_#__", "__#_X_", "_#_X__", "__X_#_", "#_X___", "___X_#", "___#_X", "X_#___" }), // 活一
     _kBlockThree({ "#XXX__", "#XX_X_", "#X_XX_", "__XXX#", "_X_XX#", "_XX_X#" }), // 眠三
     _kBlockTwo({ "_XX#__", "__XX#_", "__#XX_", "_#XX__", "___XX#", "#XX___", "XX____", "____XX" }), // 眠二
     _kBlockOne({ "__X#__", "__#X__", "___#X_", "_X#___", "#X____", "____X#" }), // 眠一
@@ -114,16 +114,18 @@ int Evaluator::Minimax(int CurrentDepth, int NextDepth, int Alpha, int Beta, Boa
     return Result;
 }
 
-Board::PawnInfo Evaluator::GetBestMove(bool bProcessCalcKill, bool bIsVct, int NextDepth) {
+Board::PawnInfo Evaluator::GetBestMove(int MaxDepth, bool bProcessCalcKill, int MaxVcxDepth, bool bIsVct, int NextDepth) {
+    DeepingMinimax(2, MaxDepth);
     if (!bProcessCalcKill) {
         return _BestMove;
     } else {
         if (!HasLayoutNearPawn(_BestMove, _kFiveLink)) {
-            Board::PawnInfo NewPoint = CalcVcxKill(NextDepth, bIsVct, _MachinePawn);
+            //Board::PawnInfo NewPoint = CalcVcxKill(NextDepth, bIsVct, _MachinePawn);
             //return NewPoint.Type == Board::_kEmpty ? _BestMove : NewPoint;
-            if (NewPoint.Type != 0) {
-                std::cout << std::format("Calculate kill: ({}, {})", NewPoint.Row, NewPoint.Column) << std::endl;
-                return NewPoint;
+            Board::PawnInfo VcxPoint = DeepingCalcKill(NextDepth, MaxVcxDepth, bIsVct);
+            if (VcxPoint.Type != 0) {
+                std::cout << std::format("Calculate kill: ({}, {})", VcxPoint.Row, VcxPoint.Column) << std::endl;
+                return VcxPoint;
             } else {
                 return _BestMove;
             }
@@ -268,8 +270,8 @@ std::vector<Board::PawnInfo> Evaluator::FindVcxPoints(Board::PawnType PawnType, 
     std::vector<Board::PawnInfo> AttackPoints;
     std::vector<Board::PawnInfo> DefensePoints;
     std::vector<Board::PawnInfo> VcxPoints;
-    bool bMachineFlag  = PawnType == _MachinePawn;
-    bool bHasThreat    = false;
+    bool bMachineFlag = PawnType == _MachinePawn;
+    bool bHasThreat   = false;
     for (int x = 0; x != kBoardSize; ++x) {
         for (int y = 0; y != kBoardSize; ++y) {
             if (_Board->GetPawnsMap()[x][y] != Board::_kEmpty) {
@@ -405,30 +407,22 @@ Evaluator::PawnLayout Evaluator::GetPawnLayout(const QString& Str) {
     return PawnLayout::kEmpty;
 }
 
-int Evaluator::EvalBoard() {
-    int HumanScore   = 0;
-    int MachineScore = 0;
-    for (int x = 0; x != kBoardSize; ++x) {
-        for (int y = 0; y != kBoardSize; ++y) {
-            if (_Board->GetPawnsMap()[x][y] == Board::_kEmpty) {
-                continue;
-            }
-            Board::PawnType CurrentType = _Board->GetPawnsMap()[x][y];
-            bool bMachineFlag = false;
-            if (CurrentType == _MachinePawn) {
-                bMachineFlag = true;
-            }
-            Board::PawnInfo Pawn{ x, y, CurrentType };
-            int Score = Evaluate(Pawn);
-            if (bMachineFlag) {
-                MachineScore += Score;
-            } else {
-                HumanScore += Score;
-            }
+bool Evaluator::HasLayout(const QString& Str, const std::vector<QString>& Layout) {
+    for (const auto& Pattern : Layout) {
+        if (Str.contains(Pattern)) {
+            return true;
         }
     }
+    return false;
+}
 
-    return MachineScore * _Aggressiveness - HumanScore;
+bool Evaluator::HasLayoutNearPawn(const Board::PawnInfo& Pawn, const std::vector<QString>& Layout) {
+    for (int i = 0; i != 4; ++i) {
+        if (HasLayout(GetSituation(Pawn, i), Layout)) {
+            return true;
+        }
+    }
+    return false;
 }
 
 int Evaluator::EvalBoard() {
@@ -449,10 +443,13 @@ int Evaluator::EvalBoard() {
             if (bMachineFlag) {
                 MachineScore += Score;
             } else {
-                HumanScore += Score;
+                HumanScore   += Score;
             }
         }
     }
+
+    return MachineScore * _Aggressiveness - HumanScore;
+}
 
 Board::PawnInfo Evaluator::CalcVcxKill(int NextDepth, bool bIsVct, Board::PawnType PawnType) {
     if (NextDepth == 0) {
@@ -539,21 +536,20 @@ Board::PawnInfo Evaluator::DeepingCalcKill(int NextDepth, int MaxDepth, bool bIs
         if (VcxPoint.Type != Board::_kEmpty) {
             break;
         }
+
         NextDepth += 2;
     }
 
     return VcxPoint;
 }
 
-Board::PawnInfo Evaluator::DeepingMinimax(int NextDepth, int MaxDepth) {
-    Board::PawnInfo BestMove{};
+void Evaluator::DeepingMinimax(int NextDepth, int MaxDepth) {
     while (NextDepth <= MaxDepth) {
         int Score = Minimax(0, NextDepth, std::numeric_limits<int>::min(), std::numeric_limits<int>::max(), _MachinePawn);
-        BestMove  = _BestMove;
-        if (std::abs(Score) >= std::numeric_limits<int>::max() - 1) {
+        if (std::abs(Score) >= GetScore(PawnLayout::kFiveLink)) {
             break;
         }
-    }
 
-    return BestMove;
+        NextDepth += 2;
+    }
 }

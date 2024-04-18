@@ -53,29 +53,40 @@ void Player::MachinePutPawn(const Board::PawnInfo& LastHumanPawn) {
         return;
     }
 
-    int Score = 0;
+    //if (_Board->GetPawnCount() <= 6) {
+    //    Score = _Evaluator->Minimax(0, 6, std::numeric_limits<int>::min(), std::numeric_limits<int>::max(), _MachinePawn);
+    //} else if (_Board->GetPawnCount() <= 20) {
+    //    Score = _Evaluator->Minimax(0, 8, std::numeric_limits<int>::min(), std::numeric_limits<int>::max(), _MachinePawn);
+    //} else if (_Board->GetPawnCount() <= 60) {
+    //    Score = _Evaluator->Minimax(0, 10, std::numeric_limits<int>::min(), std::numeric_limits<int>::max(), _MachinePawn);
+    //} else {
+    //    Score = _Evaluator->Minimax(0, 12, std::numeric_limits<int>::min(), std::numeric_limits<int>::max(), _MachinePawn);
+    //}
+
+    //if (_Board->GetPawnCount() >= 10) {
+    //    _Board->PutPawn(_Evaluator->GetBestMove(true, true, 8), true);
+    //} else if (_Board->GetPawnCount() >= 30) {
+    //    _Board->PutPawn(_Evaluator->GetBestMove(true, true, 12), true);
+    //} else {
+    //    _Board->PutPawn(_Evaluator->GetBestMove(false), true);
+    //}
+
     if (_Board->GetPawnCount() <= 6) {
-        _Evaluator->Minimax(0, 6, std::numeric_limits<int>::min(), std::numeric_limits<int>::max(), _MachinePawn);
-    } else if (_Board->GetPawnCount() <= 20) {
-        Score = _Evaluator->Minimax(0, 8, std::numeric_limits<int>::min(), std::numeric_limits<int>::max(), _MachinePawn);
+        _Board->PutPawn(_Evaluator->GetBestMove(6), true);
+    } else if (_Board->GetPawnCount() <= 10) {
+        _Board->PutPawn(_Evaluator->GetBestMove(6, true, 8), true);
+    } else if (_Board->GetPawnCount() <= 30) {
+        _Board->PutPawn(_Evaluator->GetBestMove(8, true, 10), true);
     } else if (_Board->GetPawnCount() <= 60) {
-        Score = _Evaluator->Minimax(0, 10, std::numeric_limits<int>::min(), std::numeric_limits<int>::max(), _MachinePawn);
+        _Board->PutPawn(_Evaluator->GetBestMove(10, true, 12), true);
     } else {
-        Score = _Evaluator->Minimax(0, 12, std::numeric_limits<int>::min(), std::numeric_limits<int>::max(), _MachinePawn);
+        _Board->PutPawn(_Evaluator->GetBestMove(12, true, 12), true);
     }
 
-    if (_Board->GetPawnCount() >= 10) {
-        _Board->PutPawn(_Evaluator->GetBestMove(true, true, 8), true);
-    } else if (_Board->GetPawnCount() >= 30) {
-        _Board->PutPawn(_Evaluator->GetBestMove(true, true, 12), true);
-    } else {
-        _Board->PutPawn(_Evaluator->GetBestMove(false), true);
-    }
     _bHumanFlag = !_bHumanFlag;
-    auto EndTime = std::chrono::steady_clock::now();
+    auto   EndTime  = std::chrono::steady_clock::now();
     double Duration = std::chrono::duration<double>(EndTime - BeginTime).count();
     std::cout << "Duration time: " << Duration << "s" << std::endl;
-    std::cout << "Score: " << Score << std::endl;
 }
 
 void Player::Slot_MouseEvent(QMouseEvent* Event) {
