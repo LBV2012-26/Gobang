@@ -431,23 +431,28 @@ int Evaluator::EvalBoard() {
     return MachineScore * _Aggressiveness - HumanScore;
 }
 
-bool Evaluator::HasLayout(const QString& Str, const std::vector<QString>& Layout) {
-    for (const auto& Pattern : Layout) {
-        if (Str.contains(Pattern)) {
-            return true;
+int Evaluator::EvalBoard() {
+    int HumanScore   = 0;
+    int MachineScore = 0;
+    for (int x = 0; x != kBoardSize; ++x) {
+        for (int y = 0; y != kBoardSize; ++y) {
+            if (_Board->GetPawnsMap()[x][y] == Board::_kEmpty) {
+                continue;
+            }
+            Board::PawnType CurrentType = _Board->GetPawnsMap()[x][y];
+            bool bMachineFlag = false;
+            if (CurrentType == _MachinePawn) {
+                bMachineFlag = true;
+            }
+            Board::PawnInfo Pawn{ x, y, CurrentType };
+            int Score = Evaluate(Pawn);
+            if (bMachineFlag) {
+                MachineScore += Score;
+            } else {
+                HumanScore += Score;
+            }
         }
     }
-    return false;
-}
-
-bool Evaluator::HasLayoutNearPawn(const Board::PawnInfo& Pawn, const std::vector<QString>& Layout) {
-    for (int i = 0; i != 4; ++i) {
-        if (HasLayout(GetSituation(Pawn, i), Layout)) {
-            return true;
-        }
-    }
-    return false;
-}
 
 Board::PawnInfo Evaluator::CalcVcxKill(int NextDepth, bool bIsVct, Board::PawnType PawnType) {
     if (NextDepth == 0) {
