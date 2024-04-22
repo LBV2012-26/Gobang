@@ -1,8 +1,6 @@
 #pragma once
 
 #include <memory>
-#include <vector>
-
 #include "Board.h"
 #include "MainWindow.h"
 #include "Player.h"

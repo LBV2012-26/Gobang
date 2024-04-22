@@ -1,16 +1,15 @@
 #include "MainWindow.h"
 
-#include <memory>
 #include <QPainter>
 #include <QPixmap>
+#include <QPoint>
 #include <QSize>
 
 #ifdef _DEBUG
 #include <QDebug>
 #endif // _DEBUG
 
-MainWindow::MainWindow(std::shared_ptr<Board> Board, QWidget* Parent) : _Board(Board), QWidget(Parent), _bFirstDraw(true)
-{
+MainWindow::MainWindow(std::shared_ptr<Board> Board, QWidget* Parent) : _Board(Board), QWidget(Parent), _bFirstDraw(true) {
     _MainUi.setupUi(this);
     setMaximumSize(700, 700);
     setMinimumSize(700, 700);

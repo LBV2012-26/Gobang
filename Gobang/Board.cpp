@@ -4,10 +4,6 @@
 #include <QDebug>
 #endif // _DEBUG
 
-const Board::PawnType Board::_kEmpty = 0;
-const Board::PawnType Board::_kBlack = 1;
-const Board::PawnType Board::_kWhite = 2;
-
 Board::Board() : _PawnsMap(kBoardSize, std::vector<int>(kBoardSize, 0)), _PawnCount(0) {}
 
 std::pair<Board::PawnInfo, bool> Board::PutPawn(const PawnInfo& Pawn, bool bIsNormalized, bool bDrawPawn) {
@@ -67,3 +63,7 @@ void Board::PawnConfirm(const PawnInfo& Pawn) {
         --_PawnCount;
     }
 }
+
+const Board::PawnType Board::_kEmpty = 0;
+const Board::PawnType Board::_kBlack = 1;
+const Board::PawnType Board::_kWhite = 2;

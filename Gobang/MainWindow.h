@@ -1,10 +1,10 @@
 #pragma once
 
+#include <memory>
 #include <QtWidgets/QWidget>
 #include <QImage>
 #include <QMouseEvent>
 #include <QPaintEvent>
-#include <QPoint>
 
 #include "Board.h"
 #include "ui_MainWindow.h"

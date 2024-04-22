@@ -2,9 +2,8 @@
 
 #include <memory>
 #include <unordered_map>
+#include <string>
 #include <vector>
-#include <QChar>
-#include <QString>
 
 #include "Board.h"
 
@@ -44,6 +43,7 @@ private:
 
 public:
     Evaluator(std::shared_ptr<Board> Board, Board::PawnType PawnType, double Aggressiveness);
+    Evaluator(const Evaluator&) = delete;
 
     bool IsGameOver(const Board::PawnInfo& LatestPawn);
     int Minimax(int CurrentDepth, int NextDepth, int Alpha, int Beta, Board::PawnType PawnType);
@@ -53,11 +53,11 @@ private:
     int Evaluate(Board::PawnInfo& Pawn);
     std::vector<Board::PawnInfo> GeneratePoints(Board::PawnType PawnType);
     std::vector<Board::PawnInfo> FindVcxPoints(Board::PawnType PawnType, bool bIsVct);
-    QString GetSituation(const Board::PawnInfo& Pawn, int Direction);
-    QChar GetPawn(const Board::PawnInfo& Pawn, int Direction, int Offset);
-    PawnLayout GetPawnLayout(const QString& Str);
-    bool HasLayout(const QString& Str, const std::vector<QString>& Layout);
-    bool HasLayoutNearPawn(const Board::PawnInfo& Pawn, const std::vector<QString>& Layout);
+    std::string GetSituation(const Board::PawnInfo& Pawn, int Direction);
+    char GetPawn(const Board::PawnInfo& Pawn, int Direction, int Offset);
+    PawnLayout GetPawnLayout(const std::string& Str);
+    bool HasLayout(const std::string& Str, const std::vector<std::string>& Layout);
+    bool HasLayoutNearPawn(const Board::PawnInfo& Pawn, const std::vector<std::string>& Layout);
     int EvalBoard();
     Board::PawnInfo CalcVcxKill(int NextDepth, bool bIsVct, Board::PawnType PawnType);
     Board::PawnInfo GetBestPoint(std::vector<Board::PawnInfo>& Points);
@@ -92,21 +92,21 @@ private:
     }
 
 private:
-    const std::vector<QString> _kFiveLink;
-    const std::vector<QString> _kFour;
-    const std::vector<QString> _kBlockFour;
-    const std::vector<QString> _kThree;
-    const std::vector<QString> _kBlockThree;
-    const std::vector<QString> _kTwo;
-    const std::vector<QString> _kBlockTwo;
-    const std::vector<QString> _kOne;
-    const std::vector<QString> _kBlockOne;
+    const std::vector<std::string> _kFiveLink;
+    const std::vector<std::string> _kFour;
+    const std::vector<std::string> _kBlockFour;
+    const std::vector<std::string> _kThree;
+    const std::vector<std::string> _kBlockThree;
+    const std::vector<std::string> _kTwo;
+    const std::vector<std::string> _kBlockTwo;
+    const std::vector<std::string> _kOne;
+    const std::vector<std::string> _kBlockOne;
 
     std::shared_ptr<Board> _Board;
     Board::PawnInfo        _BestMove;
     Board::PawnType        _MachinePawn;
     double                 _Aggressiveness;
-    std::vector<std::pair<const std::vector<QString>, PawnLayout>> _ScoreMap;
+    std::vector<std::pair<const std::vector<std::string>, PawnLayout>> _ScoreMap;
 
     std::vector<std::vector<long long>> _BlackZobrist;
     std::vector<std::vector<long long>> _WhiteZobrist;

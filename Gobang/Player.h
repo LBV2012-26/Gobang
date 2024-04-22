@@ -32,9 +32,4 @@ private:
     Board::PawnInfo             _LastMachineCache;
     bool                        _bHumanFlag;
     bool                        _DebugMode;
-
-#ifdef _DEBUG
-    bool                        _bSimulateMachine = false;
-#endif // _DEBUG
-
 };

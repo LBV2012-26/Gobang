@@ -1,8 +1,8 @@
 #include "Player.h"
 #include "MainWindow.h"
 
-#include <chrono>
 #include <cstdlib>
+#include <chrono>
 #include <limits>
 #include <random>
 
@@ -25,9 +25,9 @@ void Player::InitPlayer() {
     _HumanPawn   = Board::_kBlack;
     _MachinePawn = Board::_kWhite;
 
-    double Aggressiveness = _MachinePawn == Board::_kBlack ? 1.8 : 0.5;
+    double Aggressiveness = _MachinePawn == Board::_kBlack ? 2.5 : 0.5;
 
-    _Evaluator   = std::make_shared<Evaluator>(Evaluator(_Board, _MachinePawn, Aggressiveness));
+    _Evaluator = std::make_shared<Evaluator>(_Board, _MachinePawn, Aggressiveness);
 }
 
 void Player::HumanPutPawn(const Board::PawnInfo& Pawn) {
@@ -52,24 +52,6 @@ void Player::MachinePutPawn(const Board::PawnInfo& LastHumanPawn) {
         _Board->PutPawn({ 7, 7, _MachinePawn }, true);
         return;
     }
-
-    //if (_Board->GetPawnCount() <= 6) {
-    //    Score = _Evaluator->Minimax(0, 6, std::numeric_limits<int>::min(), std::numeric_limits<int>::max(), _MachinePawn);
-    //} else if (_Board->GetPawnCount() <= 20) {
-    //    Score = _Evaluator->Minimax(0, 8, std::numeric_limits<int>::min(), std::numeric_limits<int>::max(), _MachinePawn);
-    //} else if (_Board->GetPawnCount() <= 60) {
-    //    Score = _Evaluator->Minimax(0, 10, std::numeric_limits<int>::min(), std::numeric_limits<int>::max(), _MachinePawn);
-    //} else {
-    //    Score = _Evaluator->Minimax(0, 12, std::numeric_limits<int>::min(), std::numeric_limits<int>::max(), _MachinePawn);
-    //}
-
-    //if (_Board->GetPawnCount() >= 10) {
-    //    _Board->PutPawn(_Evaluator->GetBestMove(true, true, 8), true);
-    //} else if (_Board->GetPawnCount() >= 30) {
-    //    _Board->PutPawn(_Evaluator->GetBestMove(true, true, 12), true);
-    //} else {
-    //    _Board->PutPawn(_Evaluator->GetBestMove(false), true);
-    //}
 
     if (_Board->GetPawnCount() <= 6) {
         _Board->PutPawn(_Evaluator->GetBestMove(6), true);

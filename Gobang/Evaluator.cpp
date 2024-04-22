@@ -1,8 +1,8 @@
 ﻿#include "Evaluator.h"
 
-#include <algorithm>
 #include <cstdlib>
 #include <cmath>
+#include <algorithm>
 #include <format>
 #include <iostream>
 #include <limits>
@@ -64,7 +64,6 @@ int Evaluator::Minimax(int CurrentDepth, int NextDepth, int Alpha, int Beta, Boa
     if (_HashCode != 0 && _Cache.find(_HashCode) != _Cache.end()) {
         Cache = _Cache[_HashCode];
         if (Cache.Depth >= NextDepth) {
-            //std::cout << std::format("Cache found at depth {}, Hash code = {}", Cache.Depth, _HashCode) << std::endl;
             return Cache.Score;
         }
     }
@@ -120,8 +119,6 @@ Board::PawnInfo Evaluator::GetBestMove(int MaxDepth, bool bProcessCalcKill, int 
         return _BestMove;
     } else {
         if (!HasLayoutNearPawn(_BestMove, _kFiveLink)) {
-            //Board::PawnInfo NewPoint = CalcVcxKill(NextDepth, bIsVct, _MachinePawn);
-            //return NewPoint.Type == Board::_kEmpty ? _BestMove : NewPoint;
             Board::PawnInfo VcxPoint = DeepingCalcKill(NextDepth, MaxVcxDepth, bIsVct);
             if (VcxPoint.Type != 0) {
                 std::cout << std::format("Calculate kill: ({}, {})", VcxPoint.Row, VcxPoint.Column) << std::endl;
@@ -140,7 +137,7 @@ int Evaluator::Evaluate(Board::PawnInfo& Pawn) {
     int BlockFour = 0; // 冲四
     int Three     = 0; // 活三
     int FourThree = 0; // 冲四活三
-    QString Situation;
+    std::string Situation;
     for (int i = 0; i != 4; ++i) {
         Situation = GetSituation(Pawn, i);
         PawnLayout Layout = GetPawnLayout(Situation);
@@ -348,19 +345,19 @@ std::vector<Board::PawnInfo> Evaluator::FindVcxPoints(Board::PawnType PawnType, 
     return Points;
 }
 
-QString Evaluator::GetSituation(const Board::PawnInfo& Pawn, int Direction) {
-    QString Line;
+std::string Evaluator::GetSituation(const Board::PawnInfo& Pawn, int Direction) {
+    std::string Line;
     for (int Offset = -4; Offset <= 4; ++Offset) {
         if (Offset == 0) {
-            Line.append('X');
+            Line.push_back('X');
         } else {
-            Line.append(GetPawn(Pawn, Direction, Offset));
+            Line.push_back(GetPawn(Pawn, Direction, Offset));
         }
     }
     return Line;
 }
 
-QChar Evaluator::GetPawn(const Board::PawnInfo& Pawn, int Direction, int Offset) {
+char Evaluator::GetPawn(const Board::PawnInfo& Pawn, int Direction, int Offset) {
     int Row    = Pawn.Row;
     int Column = Pawn.Column;
 
@@ -397,7 +394,7 @@ QChar Evaluator::GetPawn(const Board::PawnInfo& Pawn, int Direction, int Offset)
     }
 }
 
-Evaluator::PawnLayout Evaluator::GetPawnLayout(const QString& Str) {
+Evaluator::PawnLayout Evaluator::GetPawnLayout(const std::string& Str) {
     for (const auto& ScorePair : _ScoreMap) {
         if (HasLayout(Str, ScorePair.first)) {
             return ScorePair.second;
@@ -407,7 +404,7 @@ Evaluator::PawnLayout Evaluator::GetPawnLayout(const QString& Str) {
     return PawnLayout::kEmpty;
 }
 
-bool Evaluator::HasLayout(const QString& Str, const std::vector<QString>& Layout) {
+bool Evaluator::HasLayout(const std::string& Str, const std::vector<std::string>& Layout) {
     for (const auto& Pattern : Layout) {
         if (Str.contains(Pattern)) {
             return true;
@@ -416,7 +413,7 @@ bool Evaluator::HasLayout(const QString& Str, const std::vector<QString>& Layout
     return false;
 }
 
-bool Evaluator::HasLayoutNearPawn(const Board::PawnInfo& Pawn, const std::vector<QString>& Layout) {
+bool Evaluator::HasLayoutNearPawn(const Board::PawnInfo& Pawn, const std::vector<std::string>& Layout) {
     for (int i = 0; i != 4; ++i) {
         if (HasLayout(GetSituation(Pawn, i), Layout)) {
             return true;
@@ -462,7 +459,6 @@ Board::PawnInfo Evaluator::CalcVcxKill(int NextDepth, bool bIsVct, Board::PawnTy
     if (_HashCode != 0 && _Cache.find(_HashCode) != _Cache.end()) {
         Cache = _Cache[_HashCode];
         if (Cache.Depth >= NextDepth) {
-            //std::cout << std::format("Cache found at depth {}, Hash code = {}", Cache.Depth, _HashCode) << std::endl;
             return Cache.VcxPoint;
         }
     }

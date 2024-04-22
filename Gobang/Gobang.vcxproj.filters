@@ -77,10 +77,10 @@
     <None Include="cpp.hint" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Evaluator.h">
+    <ClInclude Include="GameBase.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="GameBase.h">
+    <ClInclude Include="Evaluator.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
