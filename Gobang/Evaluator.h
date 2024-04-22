@@ -55,8 +55,8 @@ private:
     std::vector<Board::PawnInfo> FindVcxPoints(Board::PawnType PawnType, bool bIsVct);
     std::string GetSituation(const Board::PawnInfo& Pawn, int Direction);
     char GetPawn(const Board::PawnInfo& Pawn, int Direction, int Offset);
-    PawnLayout GetPawnLayout(const std::string& Str);
-    bool HasLayout(const std::string& Str, const std::vector<std::string>& Layout);
+    PawnLayout GetPawnLayout(const std::string_view Str);
+    bool HasLayout(const std::string_view Str, const std::vector<std::string>& Layout);
     bool HasLayoutNearPawn(const Board::PawnInfo& Pawn, const std::vector<std::string>& Layout);
     int EvalBoard();
     Board::PawnInfo CalcVcxKill(int NextDepth, bool bIsVct, Board::PawnType PawnType);

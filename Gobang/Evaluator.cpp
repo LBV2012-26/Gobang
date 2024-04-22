@@ -394,7 +394,7 @@ char Evaluator::GetPawn(const Board::PawnInfo& Pawn, int Direction, int Offset) 
     }
 }
 
-Evaluator::PawnLayout Evaluator::GetPawnLayout(const std::string& Str) {
+Evaluator::PawnLayout Evaluator::GetPawnLayout(const std::string_view Str) {
     for (const auto& ScorePair : _ScoreMap) {
         if (HasLayout(Str, ScorePair.first)) {
             return ScorePair.second;
@@ -404,7 +404,7 @@ Evaluator::PawnLayout Evaluator::GetPawnLayout(const std::string& Str) {
     return PawnLayout::kEmpty;
 }
 
-bool Evaluator::HasLayout(const std::string& Str, const std::vector<std::string>& Layout) {
+bool Evaluator::HasLayout(const std::string_view Str, const std::vector<std::string>& Layout) {
     for (const auto& Pattern : Layout) {
         if (Str.contains(Pattern)) {
             return true;
