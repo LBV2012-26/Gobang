@@ -1,5 +1,6 @@
 #pragma once
 
+#include <atomic>
 #include <memory>
 #include <unordered_map>
 #include <string>
@@ -46,10 +47,10 @@ public:
     Evaluator(const Evaluator&) = delete;
 
     bool IsGameOver(const Board::PawnInfo& LatestPawn);
-    int Minimax(int CurrentDepth, int NextDepth, int Alpha, int Beta, Board::PawnType PawnType);
-    Board::PawnInfo GetBestMove(int MaxDepth, bool bProcessCalcKill = false, int MaxVcxDepth = 0, bool bIsVct = false, int NextDepth = 0);
+    Board::PawnInfo GetBestMove(int MaxDepth, bool bProcessCalcKill = false, int MaxVcxDepth = 0, bool bIsVct = false, int NextDepth = 0, const Board::PawnInfo& InputPoint = {});
 
 private:
+    int Minimax(int CurrentDepth, int NextDepth, int Alpha, int Beta, Board::PawnType PawnType, const Board::PawnInfo& InputPoint);
     int Evaluate(Board::PawnInfo& Pawn);
     std::vector<Board::PawnInfo> GeneratePoints(Board::PawnType PawnType);
     std::vector<Board::PawnInfo> FindVcxPoints(Board::PawnType PawnType, bool bIsVct);
@@ -63,7 +64,7 @@ private:
     Board::PawnInfo GetBestPoint(std::vector<Board::PawnInfo>& Points);
     std::vector<Board::PawnInfo> GenRandomPoints(std::size_t Amount);
     Board::PawnInfo DeepingCalcKill(int NextDepth, int MaxDepth, bool bIsVct);
-    void DeepingMinimax(int NextDepth, int MaxDepth);
+    void DeepingMinimax(int NextDepth, int MaxDepth, const Board::PawnInfo& InputPoint);
 
 private:
     void PutPawn(const Board::PawnInfo& Point) {
@@ -102,14 +103,14 @@ private:
     const std::vector<std::string> _kOne;
     const std::vector<std::string> _kBlockOne;
 
-    std::shared_ptr<Board> _Board;
-    Board::PawnInfo        _BestMove;
-    Board::PawnType        _MachinePawn;
-    double                 _Aggressiveness;
+    std::shared_ptr<Board>                                             _Board;
+    Board::PawnInfo                                                    _BestMove;
+    Board::PawnType                                                    _MachinePawn;
+    double                                                             _Aggressiveness;
+    std::atomic<std::vector<Board::PawnInfo>>                          _BestMoves;
     std::vector<std::pair<const std::vector<std::string>, PawnLayout>> _ScoreMap;
-
-    std::vector<std::vector<long long>> _BlackZobrist;
-    std::vector<std::vector<long long>> _WhiteZobrist;
-    std::unordered_map<long long, LayoutCache> _Cache;
-    long long _HashCode;
+    std::vector<std::vector<long long>>                                _BlackZobrist;
+    std::vector<std::vector<long long>>                                _WhiteZobrist;
+    std::atomic<std::unordered_map<long long, LayoutCache>>            _Cache;
+    std::atomic<long long>                                             _HashCode;
 };

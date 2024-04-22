@@ -53,68 +53,8 @@ bool Evaluator::IsGameOver(const Board::PawnInfo& LatestPawn) {
     }
 }
 
-int Evaluator::Minimax(int CurrentDepth, int NextDepth, int Alpha, int Beta, Board::PawnType PawnType) {
-    if (NextDepth == 0) {
-        return EvalBoard();
-    }
-
-    bool bMachineFlag = PawnType == _MachinePawn;
-
-    LayoutCache Cache;
-    if (_HashCode != 0 && _Cache.find(_HashCode) != _Cache.end()) {
-        Cache = _Cache[_HashCode];
-        if (Cache.Depth >= NextDepth) {
-            return Cache.Score;
-        }
-    }
-
-    std::vector<Board::PawnInfo> Points = GeneratePoints(PawnType);
-    if (CurrentDepth == 0 && Points.size() == 1) {
-        _BestMove = Points.front();
-        return Points.front().Score;
-    }
-
-    std::vector<Board::PawnInfo> BestPoints;
-    for (const auto& Point : Points) {
-        int Score = 0;
-        if (Point.Score >= GetScore(PawnLayout::kFiveLink)) {
-            Score = bMachineFlag ? std::numeric_limits<int>::max() - 1 : std::numeric_limits<int>::min() + 1;
-        } else {
-            PutPawn(Point);
-            Score = Minimax(CurrentDepth + 1, NextDepth - 1, Alpha, Beta, 3 - PawnType);
-            RevokePawn(Point);
-        }
-
-        if (bMachineFlag) {
-            if (Score > Alpha) {
-                Alpha = Score;
-                if (CurrentDepth == 0) {
-                    BestPoints.clear();
-                }
-                BestPoints.push_back(Point);
-            }
-        } else {
-            if (Score < Beta) {
-                Beta = Score;
-            }
-        }
-
-        if (Alpha >= Beta) {
-            break;
-        }
-    }
-
-    if (CurrentDepth == 0) {
-        _BestMove = BestPoints.size() > 1 ? GetBestPoint(Points) : BestPoints.front();
-    }
-
-    int Result = bMachineFlag ? Alpha : Beta;
-    _Cache.insert({ _HashCode, LayoutCache(Result, NextDepth) });
-    return Result;
-}
-
-Board::PawnInfo Evaluator::GetBestMove(int MaxDepth, bool bProcessCalcKill, int MaxVcxDepth, bool bIsVct, int NextDepth) {
-    DeepingMinimax(2, MaxDepth);
+Board::PawnInfo Evaluator::GetBestMove(int MaxDepth, bool bProcessCalcKill, int MaxVcxDepth, bool bIsVct, int NextDepth, const Board::PawnInfo& InputPoint) {
+    DeepingMinimax(2, MaxDepth, InputPoint);
     if (!bProcessCalcKill) {
         return _BestMove;
     } else {
@@ -129,6 +69,70 @@ Board::PawnInfo Evaluator::GetBestMove(int MaxDepth, bool bProcessCalcKill, int 
         } else {
             return _BestMove;
         }
+    }
+}
+
+int Evaluator::Minimax(int CurrentDepth, int NextDepth, int Alpha, int Beta, Board::PawnType PawnType, const Board::PawnInfo& InputPoint) {
+    if (NextDepth == 0) {
+        return EvalBoard();
+    }
+
+    bool bMachineFlag = PawnType == _MachinePawn;
+
+    LayoutCache Cache;
+    if (_HashCode != 0 && _Cache.find(_HashCode) != _Cache.end()) {
+        Cache = _Cache[_HashCode];
+        if (Cache.Depth >= NextDepth) {
+            return Cache.Score;
+        }
+    }
+
+    if (InputPoint.Type != Board::_kEmpty) {
+        std::vector<Board::PawnInfo> Points = GeneratePoints(PawnType);
+        if (CurrentDepth == 0 && Points.size() == 1) {
+            _BestMove = Points.front();
+            return Points.front().Score;
+        }
+
+        std::vector<Board::PawnInfo> BestPoints;
+        for (const auto& Point : Points) {
+            int Score = 0;
+            if (Point.Score >= GetScore(PawnLayout::kFiveLink)) {
+                Score = bMachineFlag ? std::numeric_limits<int>::max() - 1 : std::numeric_limits<int>::min() + 1;
+            } else {
+                PutPawn(Point);
+                Score = Minimax(CurrentDepth + 1, NextDepth - 1, Alpha, Beta, 3 - PawnType, {});
+                RevokePawn(Point);
+            }
+
+            if (bMachineFlag) {
+                if (Score > Alpha) {
+                    Alpha = Score;
+                    if (CurrentDepth == 0) {
+                        BestPoints.clear();
+                    }
+                    BestPoints.push_back(Point);
+                }
+            } else {
+                if (Score < Beta) {
+                    Beta = Score;
+                }
+            }
+
+            if (Alpha >= Beta) {
+                break;
+            }
+        }
+
+        if (CurrentDepth == 0) {
+            _BestMove = BestPoints.size() > 1 ? GetBestPoint(Points) : BestPoints.front();
+        }
+
+        int Result = bMachineFlag ? Alpha : Beta;
+        _Cache.insert({ _HashCode, LayoutCache(Result, NextDepth) });
+        return Result;
+    } else {
+
     }
 }
 
@@ -539,9 +543,9 @@ Board::PawnInfo Evaluator::DeepingCalcKill(int NextDepth, int MaxDepth, bool bIs
     return VcxPoint;
 }
 
-void Evaluator::DeepingMinimax(int NextDepth, int MaxDepth) {
+void Evaluator::DeepingMinimax(int NextDepth, int MaxDepth, const Board::PawnInfo& InputPoint = {}) {
     while (NextDepth <= MaxDepth) {
-        int Score = Minimax(0, NextDepth, std::numeric_limits<int>::min(), std::numeric_limits<int>::max(), _MachinePawn);
+        int Score = Minimax(0, NextDepth, std::numeric_limits<int>::min(), std::numeric_limits<int>::max(), _MachinePawn, InputPoint);
         if (std::abs(Score) >= GetScore(PawnLayout::kFiveLink)) {
             break;
         }
